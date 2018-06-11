@@ -1,4 +1,6 @@
 FROM node:alpine
+ENV config_dir=/config
+RUN mkdir -p /usr/src/app && mkdir /config
 
 # Create app directory
 WORKDIR /usr/src/app
