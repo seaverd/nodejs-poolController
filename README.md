@@ -1,40 +1,21 @@
 
-# nodejs-poolController - Version 5.0.1
+
+# nodejs-poolController - Version 5.3.0
+
 
 
 [![Join the chat at https://gitter.im/nodejs-poolController/Lobby](https://badges.gitter.im/nodejs-poolController/Lobby.svg)](https://gitter.im/nodejs-poolController/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/tagyoureit/nodejs-poolController.svg?branch=master)](https://travis-ci.org/tagyoureit/nodejs-poolController) [![Coverage Status](https://coveralls.io/repos/github/tagyoureit/nodejs-poolController/badge.svg?branch=master)](https://coveralls.io/github/tagyoureit/nodejs-poolController?branch=master) [![Known Vulnerabilities](https://snyk.io/test/github/tagyoureit/nodejs-poolcontroller/badge.svg)](https://snyk.io/test/github/tagyoureit/nodejs-poolcontroller)
 
-#### 5.0.1
-1. Fixed Influx error on startup #90
-1. Fixed bad characters in custom names
+[Full Changelog](#module_nodejs-poolController--changelog)
 
 
-#### 5.1.0 Highlights
-1. Intellibrite support - API's, Sockets and a WebUI
-Will document more later... but...
-/light/mode/:mode
-/light/circuit/:circuit/setColor/:color
-/light/circuit/:circuit/setSwimDelay/:delay
-/light/circuit/:circuit/setPosition/:position
+### 5.3.0
+1. Fix for #106
+1. Fix for "Error 60" messages
+1. Improved caching of files on browsers.  Thanks @arrmo!  Now files will be loaded once in the browser and kept in cache instead of reloaded each time.
+1. Improved handling of sessions and graceful closing of the HTTP(s) servers.
 
-See the constants.js file and the sections:
-  strIntellibriteModes (for modes)
-  lightColors (for setColor)
 
-#### 5.0.0 Highlights
-
-Make sure to run `npm upgrade`.  There are many package updates and changes.
-
-1. SSDP for auto-discovery by SmartThings or other services
-1. mDNS server.  Currently included for SmartThings integration, but in the future can be used for autodiscovery by other applications/devices.
-1. Added `/config` endpoint.
-1. This release includes a new mechanism for updating config.json files. See notes in [config.json](#module_nodejs-poolController--config) section.
-1. Support for two separate (http/https) web servers, each/both with Auth, and also the option to redirect all http to https traffic.  Thanks to @arrmo for driving this with #65 and #68.
-1. A UI for standalone pumps
-1. All sockets and API's renamed to be SINGULAR.  Circuits -> circuit, Schedules->schedule, etc.
-1. All returned JSON data (API/socket) now has the type qualifier per [#57](https://github.com/tagyoureit/nodejs-poolController/issues/57)
-1. Intellichem initial support.
-1. Inactivity timer for both internal connections and web page connections.  If a connection is broken, it should re-establish itself automatically now.
 
 # License
 
@@ -216,10 +197,14 @@ for discussions, designs, and clarifications, we recommend you join our [Gitter 
 
 
 #### Chlorinator and Intellichem
-
+(Note: As of 5.3 the Chlorinator API's will route the commands either through the Intellitouch/Intellicom or directly to the chlorinator depending upon your setup)
 | Direction | Socket  | API | Description |
 | --- | --- | ---  | --- |
-| To app | <code>setchlorinator(level)</code> |  <code>/chlorinator/{level}</code>|sets the level of output for chlorinator (pool only)
+| To app | <code>setchlorinator(poolLevel, spaLevel, superChlorinateHours)</code> |  <code>/chlorinator/{level}/spa/{level}/superChlorinateHours/{hours}</code>|sets the level of output for chlorinator (spa/superchlorinate can be omitted)
+| To app |  |  <code>/chlorinator/pool/{level}</code>|sets the pool output %
+| To app |  |  <code>/chlorinator/spa/{level}</code>|sets the spa output %
+| To app |  |  <code>/chlorinator/pool/{level}/spa/{level}</code>|sets the pool & spa output %
+| To app |  |  <code>/chlorinator/superChlorinateHours/{hours}</code>|sets the hours for super chlorination
 | To client | <code>chlorinator</code> | outputs an object with the chlorinator information
 | To app | | <code>/chlorinator</code> | outputs an object with the chlorinator information
 | To app | <code>intellichem</code> | <code>/intellichem</code> |outputs an object with the intellichem information
@@ -330,7 +315,10 @@ See below for descriptions
             },
             "intellitouch": {
                 "installed": 1,
-                "friendlyName": ""
+                "friendlyName": "",
+                "numberOfCircuits": 20,
+                "numberOfPumps": 2,
+                "numberOfCustomNames": 10
             },
             "virtual": {
                 "pumpController": "default",
@@ -530,6 +518,11 @@ Physical or virtual controllers
 ### intellitouch
  * If you have this, set `"installed": 1`
  * `friendlyName` - not implemented as of 4.0 alpha 8
+ * If you have expansion boards, set the number in the appropriate variables.  The app will expand your sections of your config.json to have the appropriate variables.
+
+    1. "numberOfCircuits": default=20; increases by 10 per board up to 50
+    1. "numberOfPumps": default=2; increases by 2 per board up to 10
+    1. "numberOfCustomNames": default=10; increases by 10 per board up to 40
 
 ### virtual
 Options to use the nodejs-poolController app as the controller on your system.  You should not enable these if you have another controller (intellicom/intellitouch)
@@ -857,60 +850,8 @@ Docker Instructions
 
 ***
 
+<a name="module_nodejs-poolController--changelog"></a>
 # Versions
-0.0.1 - This version was the first cut at the code
-
-0.0.2 - Many, many improvements.
-
-* No duplicate messages!  I realized the way my code was running that I was parsing the same message multiple times.  The code now slices the buffer after each message that is parsed.
-* Logging.  The program now uses Winston to have different logs.  The Pentair bus has a LOT of messages.  All the output, debug messages, etc, are being saved to 'pentair_full_dump.log' and successful messages are being logged to 'pentair_info.log'.  I will update these names, but if you want less logging, set the transports to ```level: 'error'``` from 'level: 'silly'.  It's just silly how much it logs at this level!
-* Decoding.  The code is getting pretty good at understanding the basic message types.  There are some that I know and still have to decode; some that I know mostly what they do, and some that are still mysteries!  Please help here.
-
-0.0.3 - More bug fixes.  Now detects heat mode changes for both pool & spa.  Logging is set to very low (console), but still nearly everything will get written to the logs (see 0.0.2 notes). I've noticed that if any material change is made to the configuration (temp, heat mode, circuit names, etc) Pentair will spit out about 40 lines of configuration.  Reading this is a little challenging but I have figured out a few things.
-
-0.0.4 - Added UOM (Celsius or Farenheit) thank you rflemming for your contributions!  Also added a 'Diff' line to the equipment output to easily see what has changed at the byte level.
-
-0.0.5 - Added a very simple websocket resource (http://server:3000) which will display the output from the pool.  Will make it pretty, and interactive, shortly.
-
-0.0.6 -
-* Circuits, custom names, and schedules can now be read from the configuration broadcast by the pool.  However, you need to force the configuration to be re-broadcast by changing the heat set point.  This will change in future versions when successful writing to the serial bus is included.
-* http://_your_machine_name_:3000 to see a basic UI (websockets with persistent updates on status)
-* http://_your_machine_name_:3000/debug.html for a way to listen for specific messages
-* It is clear that I will need to change around the internal structure of how the circuits and equipment information is stored so that it can be better presented in the UI and display can be dependent on circuit type (pool, spa, lights, etc) and desired changes (on/off, set temperature, set mode, etc) can know what information is needed
-
-0.0.7 -
-* Writeback enabled!  (after much frustration)
-* UI for web updated
-* Refactored code in many different ways
-* Really messed up the logging in the course of debugging.  I need to fix this.
-* Need to still update the web UI for the status of the system and also the REST api for hooks to other HA apps.
-* I'm having trouble with the RS485 cable above, but purchased another one for <$5 from Amazon that is working better.
-
-
-0.0.8 -
-* Significantly revised the logging.  It now comes with more options, and by default, is much quieter.
-* Got rid of the logging to the files.  It wasn't useful.  Winston can easily be modified to write back to the log files if your situation dictates this.
-* Sockets.io compatability
-* REST API
-
-0.0.9 -
-* Added REST API and Sockets.io call to change heat set point and change heat mode
-* Updated UI to reflect new Socket calls (you can now change the heat mode and pool temp).
-* Updated SerialPort to 4.0.1.
-
-0.1.0 -
-* Something weird happened and my Intellitouch stopped responding to packets starting with 255,0,255,165,10,DEST,SRC...  The 10 changed to a 16.  I don't know why, but it drove me crazy for 5 days.  Now the app dynamically reads this packet.
-* Much more information debugged for my friends over at CocoonTech.
-* Bug fixes galore.  More clear logging messages.
-
-0.1.1 -
-* For those of you with stand-alone pumps you can now control them!
-* Chlorinators are now understood
-* Lot of rework on understanding and decoding packets and their responses in general
-* Make sure you set the variables properly as multiple configurations are now supported.
-* Stand alone pump mode!  New pump.html for the pump(s) only configuration
-* Write packets now controlled via a timer (MUCH faster!)
-* Many more changes!
 
 1.0.0 -
  * Much of the code reworked and refactored
@@ -949,6 +890,8 @@ Docker Instructions
  * Delay and Cancel Delay for circuits
 
 5.0.0 -
+Make sure to run `npm upgrade`.  There are many package updates and changes.
+
  * Added add/delete/edit schedule
  * All sockets/API now singular (`circuits`->`circuit`)
  * All sockets/API data now returned with a JSON qualifier. EG `{pump:...}`, `{circuit:...}`
@@ -980,6 +923,49 @@ Docker Instructions
  * Intellichem initial support.
  * Inactivity timer for both internal connections and web page connections.  If a connection is broken, it should re-establish itself automatically now.
  * SSDP for auto-discovery by SmartThings or other services
+
+5.0.1 -
+1. Fixed Influx error on startup #90
+1. Fixed bad characters in custom names
+
+5.1.0 -
+1. Intellibrite support - API's, Sockets and a WebUI.  Lights should have the 'Intellbrite' an their circuit function (set this up at the controller) to show up in this section.
+Will document more later, but...
+/light/mode/:mode
+/light/circuit/:circuit/setColor/:color
+/light/circuit/:circuit/setSwimDelay/:delay
+/light/circuit/:circuit/setPosition/:position
+
+See the constants.js file and the sections:
+  strIntellibriteModes (for modes)
+  lightColors (for setColor)
+
+5.1.1 -
+1.  Renamed all 'valves' items to valve to be in line with singular renaming of items
+1.  InfluxDB - moved some items that were in tag fields to field keys; added valves
+1.  Added days of week (with editing) back to the schedules.  Not sure when they disappeared, but they are back now.  #92
+1.  Added MySQL integration to log all packets to a DB
+1.  Fixed PR #95 to allow sub-hour egg timers
+1.  Fixed Intellibrite bugs
+1.  Started to move some of the inter-communications to emitter events for better micro-services and shorter call stacks (easier debugging; loosely coupled code).
+1.  Changed some Influx tags/queries.
+
+### 5.2.0
+1. Node 6+ is supported.  This app no longer supports Node 4.
+1. Update of modules.  Make sure to run `npm i` or `npm upgrade` to get the latest.
+1. Much better support of multiple Intellibrite controllers.  We can read both controllers now.  There are still some issues with sending changes and help is needed to debug these.
+1. Chlorinator API calls (and UI) will now make changes through Intellitouch when available, or directly to the Intellichlor if it is standalone (aka using the virtual controller)
+1. Decoupled serial port and processing of packets.  Should help recovery upon packet errors.
+1. Implementation of #89.  Expansion boards are now (better) supported by setting variables in your config.json.  See the [config.json](#module_nodejs-poolController--config) section below.
+1. Fix for #95
+1. Fix for #99
+1. Fix for #100
+
+
+
+
+
+
 
 # Wish list
 1.  Still many messages to debug

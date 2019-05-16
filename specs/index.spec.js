@@ -10,37 +10,46 @@ describe('nodejs-poolController', function () {
     describe('Loads/checks for a valid configuration file', function () {
 
         before(function () {
-
+            // initialize winston once with defaults
+            return Promise.resolve()
+            .then(function(){
+                bottle.container.logger.init()
+            })
+            .delay(50)
+            .then(function(){
+                console.log("done")
+                bottle.container.logger.info("test logger")
+                bottle.container.logger.warn("test warn")
+                bottle.container.logger.error("test error")
+            })
         })
 
 
         beforeEach(function () {
-
-            updateAvailStub = sandbox.stub(bottle.container.updateAvailable, 'getResultsAsync').returns(Promise.resolve({}))
+            
+            updateAvailStub = sinon.stub(bottle.container.updateAvailable, 'getResultsAsync').returns(Promise.resolve({}))
             if (global.logInitAndStop) {
-                loggerInfoStub = sandbox.spy(bottle.container.logger, 'info')
-                loggerWarnStub = sandbox.spy(bottle.container.logger, 'warn')
-                loggerVerboseStub = sandbox.spy(bottle.container.logger, 'verbose')
-                loggerDebugStub = sandbox.spy(bottle.container.logger, 'debug')
-                loggerErrorStub = sandbox.spy(bottle.container.logger, 'error')
-                loggerSillyStub = sandbox.spy(bottle.container.logger, 'silly')
+                loggerInfoStub = sinon.spy(bottle.container.logger, 'info')
+                loggerWarnStub = sinon.spy(bottle.container.logger, 'warn')
+                loggerVerboseStub = sinon.spy(bottle.container.logger, 'verbose')
+                loggerDebugStub = sinon.spy(bottle.container.logger, 'debug')
+                loggerErrorStub = sinon.spy(bottle.container.logger, 'error')
+                loggerSillyStub = sinon.spy(bottle.container.logger, 'silly')
             }
             else {
-                loggerInfoStub = sandbox.stub(bottle.container.logger, 'info')
-                loggerWarnStub = sandbox.stub(bottle.container.logger, 'warn')
-                loggerVerboseStub = sandbox.stub(bottle.container.logger, 'verbose')
-                loggerDebugStub = sandbox.stub(bottle.container.logger, 'debug')
-                loggerErrorStub = sandbox.stub(bottle.container.logger, 'error')
-                loggerSillyStub = sandbox.stub(bottle.container.logger, 'silly')
-                consoleStub = sandbox.stub(console, 'error')
+                loggerInfoStub = sinon.stub(bottle.container.logger, 'info')
+                loggerWarnStub = sinon.stub(bottle.container.logger, 'warn')
+                loggerVerboseStub = sinon.stub(bottle.container.logger, 'verbose')
+                loggerDebugStub = sinon.stub(bottle.container.logger, 'debug')
+                loggerErrorStub = sinon.stub(bottle.container.logger, 'error')
+                loggerSillyStub = sinon.stub(bottle.container.logger, 'silly')
+                //consoleStub = sinon.stub(console, 'error')
 
             }
         })
 
         afterEach(function () {
-            //restore the sandbox after each function
-            sandbox.restore()
-            //console.log('afterEach')
+            sinon.restore()
         })
 
         after(function () {
@@ -50,7 +59,7 @@ describe('nodejs-poolController', function () {
 
         it('#should load settings', function () {
 
-                return bottle.container.settings.loadAsync('./specs/assets/config/config.json')
+                return bottle.container.settings.loadAsync({"configLocation":'./specs/assets/config/config.json'})
                 .then(function () {
                     bottle.container.settings.get('intellitouch.installed').should.equal(1)
                 })
@@ -85,7 +94,7 @@ describe('nodejs-poolController', function () {
         //                 bottle.container.intellitouch.init()
         //                 bottle.container.temperatures.init()
         //                 bottle.container.UOM.init()
-        //                 bottle.container.valves.init()
+        //                 bottle.container.valve.init()
         //             })
         //             .then(resolve)
         //             .catch(function (err) {
@@ -97,7 +106,7 @@ describe('nodejs-poolController', function () {
         //
         // })
 
-        it('#loads/checks helper functions', function () {
+        it('#loads/checks helper functions', function (done) {
             bottle.container.logger.init()
             bottle.container.winstonToIO.init()
             bottle.container.helpers
@@ -107,6 +116,9 @@ describe('nodejs-poolController', function () {
             bottle.container.settings.getConfig()
             bottle.container.settings.set('myvalismissing')
             bottle.container.integrations.init()
+            setTimeout(function(){
+                done()
+            }, 300)
         })
 
 
@@ -115,21 +127,15 @@ describe('nodejs-poolController', function () {
             return Promise.resolve()
                 .then(function () {
                     global.logInitAndStop = 0
-                    sandbox.restore()
-                    setupLoggerStubOrSpy('stub', 'stub')
-                    consoleEStub = sandbox.stub(console, 'error')
-                    consoleStub = sandbox.stub(console, 'log')
+                    return global.initAllAsync({'configLocation':'/specs/assets/config/templates/config_not_here.json'})
                 })
-
-                .then(global.initAllAsync('/specs/assets/config/templates/config_not_here.json'))
-
+                .then(function(){
+                    sinon.assert.fail('Should not get here')
+                })
                 .catch(function (err) {
-                    err.message.should.contain('does not exist')
+                    sinon.assert.pass()
                 })
                 .finally(function () {
-                    // console.log('loggerErrorStub.callCount', loggerErrorStub.callCount)
-                    //loggerErrorStub.callCount.should.equal(2)
-                    sandbox.restore()
                     global.logInitAndStop = priorLogInitAndStop
                 })
         })
