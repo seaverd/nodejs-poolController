@@ -1,13 +1,17 @@
 
+### Important note-downgrade from the latest version of node to use dependencies in this project. A new version of this app is currently under development. 
 
-# nodejs-poolController - Version 5.3.0
-
-
+# nodejs-poolController - Version 5.3.3
 
 [![Join the chat at https://gitter.im/nodejs-poolController/Lobby](https://badges.gitter.im/nodejs-poolController/Lobby.svg)](https://gitter.im/nodejs-poolController/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/tagyoureit/nodejs-poolController.svg?branch=master)](https://travis-ci.org/tagyoureit/nodejs-poolController) [![Coverage Status](https://coveralls.io/repos/github/tagyoureit/nodejs-poolController/badge.svg?branch=master)](https://coveralls.io/github/tagyoureit/nodejs-poolController?branch=master) [![Known Vulnerabilities](https://snyk.io/test/github/tagyoureit/nodejs-poolcontroller/badge.svg)](https://snyk.io/test/github/tagyoureit/nodejs-poolcontroller)
 
 [Full Changelog](#module_nodejs-poolController--changelog)
 
+### 5.3.3
+1. #134
+
+### 5.3.1 
+1. #132
 
 ### 5.3.0
 1. Fix for #106
@@ -63,6 +67,8 @@ Extend nodejs-Poolcontroller with these additional integration points
 * [Another SmartThings Controller](https://github.com/dhop90/pentair-pool-controller/blob/master/README.md) by @dhop90
 * [ISY](src/integrations/socketISY.js) included with this app.  Original credit to @blueman2, enhancements by @mayermd
 * [ISY Polyglot NodeServer](https://github.com/brianmtreese/nodejs-pool-controller-polyglotv2) created by @brianmtreese
+* [MQTT](https://github.com/crsherman/nodejs-poolController-mqtt) created by @crsherman.
+* [Hubitat](https://github.com/bsileo/hubitat_poolcontroller) by @bsileo
 
 ***
 
@@ -119,7 +125,7 @@ for discussions, designs, and clarifications, we recommend you join our [Gitter 
 
 ## Useful URL's included with the boring, basic, functional interface
 
-  *  Control standalone pumps: `http://_your_machine_name_:3000/pump.html`
+  *  ~~Control standalone pumps: `http://_your_machine_name_:3000/pump.html`~~ See #150.
   *  Listen for specific messages: `http://_your_machine_name_:3000/debug.html`
   *  Send a message on the serial bus: `http://<server>:3000/public/send_packet.html`
 
@@ -817,7 +823,7 @@ In the <code>["network"](#module_nodejs-poolController--config)</code> section, 
 ## Standalone mode
 
 ### Pump controller (as of 4.0 alpha 8)
-Start the app and navigate to http://localhost:3000/public/pump.html.  Addition of the pump control to `/bootstrap` is in progress
+~~Start the app and navigate to http://localhost:3000/public/pump.html.  Addition of the pump control to `/bootstrap` is in progress~~. See #150.
 
 
 ***
