@@ -1,4 +1,4 @@
-FROM node:14.4.0
+FROM node:9.4.0
 ENV config_dir=/config
 RUN mkdir -p /usr/src/app && mkdir /config
 
