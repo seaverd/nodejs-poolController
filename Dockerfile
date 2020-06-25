@@ -1,4 +1,4 @@
-FROM node:14
+FROM node:14.4.0
 ENV config_dir=/config
 RUN mkdir -p /usr/src/app && mkdir /config
 
@@ -8,7 +8,7 @@ WORKDIR /usr/src/app
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 # where available (npm@5+)
-COPY package*.json ./
+COPY *.* ./
 
 RUN npm install
 # If you are building your code for production
