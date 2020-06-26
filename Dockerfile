@@ -1,4 +1,4 @@
-FROM node:lts-alpine as builder
+FROM alpine
 ENV config_dir=/config
 RUN mkdir -p /usr/src/app && mkdir /config
 
