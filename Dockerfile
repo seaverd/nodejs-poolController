@@ -1,4 +1,4 @@
-FROM alpine
+FROM node:10.16.0-alpine
 ENV config_dir=/config
 RUN mkdir -p /usr/src/app && mkdir /config
 
